@@ -1,11 +1,19 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PauseMenu : MonoBehaviour {
     /* -------------------------------- Variables ------------------------------- */
     public static bool GAME_PAUSED = false;
     public KeyCode keyPause = KeyCode.Escape;
     public GameObject pauseMenuUI;
+
+    [SerializeField] Sprite toggleOn;
+    [SerializeField] Sprite toggleOff;
+
+    [SerializeField] GameObject btnMusic;
+    [SerializeField] GameObject btnSFX;
+
 
     // Private
     private GameManager gameManager;
@@ -54,13 +62,34 @@ public class PauseMenu : MonoBehaviour {
         Resume();
     }
 
+    private bool toggleSFX = true;
+    private bool toggleMusic = true;
+
     public void OnToggleMusic()
     {
-
+        if (toggleMusic)
+        {
+            btnMusic.GetComponent<Image>().sprite = toggleOff;
+            toggleMusic = false;
+        }
+        else
+        {
+            btnMusic.GetComponent<Image>().sprite = toggleOn;
+            toggleMusic = true;
+        }
     }
 
     public void OnToggleSFX()
     {
-
+        if (toggleSFX)
+        {
+            btnSFX.GetComponent<Image>().sprite = toggleOff;
+            toggleSFX = false;
+        }
+        else
+        {
+            btnSFX.GetComponent<Image>().sprite = toggleOn;
+            toggleSFX = true;
+        }
     }
 }

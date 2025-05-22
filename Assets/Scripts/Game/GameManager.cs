@@ -49,6 +49,8 @@ public class GameManager : MonoBehaviour
     // Private
     private bool hasGameLostBeenCalled = false;
 
+    [SerializeField] GameObject gameOverBoard;
+
 
     /* ------------------------------- Unity Func ------------------------------- */
     // Start is called before the first frame update
@@ -267,7 +269,13 @@ public class GameManager : MonoBehaviour
             // Calculate point from fruit and destroy it
             CalculatePoint(fruitID);
             Destroy(fruitObject);
+            ShowGameOver();
         }
+    }
+
+    private void ShowGameOver()
+    {
+        gameOverBoard.SetActive(true);
     }
 
     // Function that plays the SFX
