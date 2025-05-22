@@ -3,11 +3,8 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour {
     /* -------------------------------- Variables ------------------------------- */
-    public bool inCredits = false;
     public GameObject panelMenu;
-    public GameObject panelCredits;
-    public string linkSukaGame = "https://wikipedia.org/wiki/Suika_Game";
-    
+    public GameObject pauseMenuUI;
 
     /* ------------------------------- Button Func ------------------------------ */
     // Button : Play
@@ -15,30 +12,18 @@ public class MainMenu : MonoBehaviour {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
-    // Button : Credits
-    public void Credits() {
-        // Open credits
-        if (!inCredits) {
-            inCredits = true;
-            panelMenu.SetActive(false);
-            panelCredits.SetActive(true);
-        }
-        // Close credits
-        else {
-            inCredits = false;
-            panelMenu.SetActive(true);
-            panelCredits.SetActive(false);
-        }
-    }
-
     // Button : Exit
     public void QuitGame() {
         Application.Quit(); // Close game
     }
 
-    // Button : Suika Game (in credits)
-    public void SuikaGame() {
-        Application.OpenURL(linkSukaGame);
+
+    public void Settings()
+    {
+        pauseMenuUI.SetActive(true);
+        /*
+        Time.timeScale = 0f; // Freeze time
+        GAME_PAUSED = true;*/
     }
 
 }

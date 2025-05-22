@@ -5,16 +5,18 @@ using System.Collections.Generic;
 using TMPro;
 
 
-public class GameManager : MonoBehaviour {
+public class GameManager : MonoBehaviour
+{
     /* -------------------------------- Variables ------------------------------- */
     [Header("Fruits")]
     public GameObject fruitsContainer;
-    public GameObject fruit0, fruit1, fruit2, fruit3, fruit4, fruit5, fruit6, fruit7, fruit8, fruit9, fruit10;
+    public GameObject fruit0, fruit1, fruit2, fruit3, fruit4, fruit5, fruit6, fruit7, fruit8, fruit9, fruit10, fruit11;
+    public GameObject[] nextFruitArray;
     public GameObject[] fruitsOrder;
     public List<GameObject> fruitsQueue;
     public List<(GameObject fruit, float weight)> fruitsDroppable = new List<(GameObject, float)>();
-    public int[] fruitsPoints = { 0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66};
-    public int[] fruitsMergeBonusPoints = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    public int[] fruitsPoints = { 0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78 };
+    public int[] fruitsMergeBonusPoints = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 };
     public float fruitsZ = -1;
 
     [Header("Particles")]
@@ -28,6 +30,7 @@ public class GameManager : MonoBehaviour {
     public GameObject audioSource;
     public AudioClip SFX_fruitMurge;
     public AudioClip SFX_fruit10Murge;
+    public AudioClip SFX_fruit11Murge; // Audio clip for fruit11
 
     [Header("Score")]
     public int score = 0;
@@ -49,9 +52,10 @@ public class GameManager : MonoBehaviour {
 
     /* ------------------------------- Unity Func ------------------------------- */
     // Start is called before the first frame update
-    void Start() {
+    void Start()
+    {
         // Create fruit order list
-        fruitsOrder = new GameObject[] { fruit0, fruit1, fruit2, fruit3, fruit4, fruit5, fruit6, fruit7, fruit8, fruit9, fruit10 };
+        fruitsOrder = new GameObject[] { fruit0, fruit1, fruit2, fruit3, fruit4, fruit5, fruit6, fruit7, fruit8, fruit9, fruit10, fruit11 };
         // Create starting fruit queue
         fruitsQueue = new List<GameObject> { fruit0, fruit0 };
         // Initialize the droppable fruits with their weights
@@ -65,7 +69,8 @@ public class GameManager : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update() {
+    void Update()
+    {
         // Update score on screen
         textScore.text = score.ToString();
 
@@ -79,16 +84,18 @@ public class GameManager : MonoBehaviour {
 
     /* -------------------------------- Functions ------------------------------- */
     // Coroutine that summons and gets rid of particles
-    public IEnumerator SpawnParticle(ParticleSystem particleSystem, Vector2 position) {
+    public IEnumerator SpawnParticle(ParticleSystem particleSystem, Vector2 position)
+    {
         Vector3 spawnPosition = new Vector3(position.x, position.y, particlesZ);
         ParticleSystem particleInstance = Instantiate(particleSystem, spawnPosition, Quaternion.identity);
         particleInstance.transform.SetParent(particlesContainer.transform); // Set particlesContainer as parent
         yield return new WaitForSeconds(particleInstance.main.duration); // Wait for the duration of the particle system        
         Destroy(particleInstance.gameObject); // Destroy the particle system
     }
-    
+
     // Function handles two similar fruits colliding
-    public void SameFruitCollided(GameObject selfFruit, GameObject otherFruit, int fruitID) {
+    public void SameFruitCollided(GameObject selfFruit, GameObject otherFruit, int fruitID)
+    {
         // Play animation
         StartCoroutine(SameFruitCollidedAnimation(selfFruit, otherFruit, fruitID));
 
@@ -97,7 +104,8 @@ public class GameManager : MonoBehaviour {
     }
 
     // Coroutine to animate the fruits on collision
-    IEnumerator SameFruitCollidedAnimation(GameObject selfFruit, GameObject otherFruit, int fruitID) {
+    IEnumerator SameFruitCollidedAnimation(GameObject selfFruit, GameObject otherFruit, int fruitID)
+    {
         float fruitDestroyScaleIncrement = 0.05f;
 
         // Change fruit scale
@@ -123,9 +131,11 @@ public class GameManager : MonoBehaviour {
     }
 
     // Function that summon a new fruit by murging two of them
-    void MergeFruits(GameObject selfFruit, GameObject otherFruit, int fruitID) {
-        // Get next fruit if fruitID <= 9
-        if (fruitID <= 9) {
+    void MergeFruits(GameObject selfFruit, GameObject otherFruit, int fruitID)
+    {
+        // Get next fruit if fruitID <= 10
+        if (fruitID <= 10)
+        {
             // Get next fruit ID
             int nextFruitID = fruitID + 1;
 
@@ -134,7 +144,7 @@ public class GameManager : MonoBehaviour {
 
             // Get the next fruit prefab from the array
             GameObject nextFruitPrefab = fruitsOrder[nextFruitID];
-            
+
             // Calculate midpoint position between selfFruit and otherFruit
             Vector2 midpoint = (selfFruit.transform.position + otherFruit.transform.position) / 2f;
 
@@ -142,33 +152,37 @@ public class GameManager : MonoBehaviour {
             Rigidbody2D selfRb = selfFruit.GetComponent<Rigidbody2D>();
             Rigidbody2D otherRb = otherFruit.GetComponent<Rigidbody2D>();
             Vector2 averageVelocity = (selfRb.linearVelocity + otherRb.linearVelocity) / 2f;
-            float averageAngularVelocity = (selfRb.angularVelocity + otherRb.angularVelocity) / 2f;    
-            
+            float averageAngularVelocity = (selfRb.angularVelocity + otherRb.angularVelocity) / 2f;
+
             // Spawn the mergedFruit at the midpoint position
             GameObject mergedFruit = Instantiate(nextFruitPrefab, new Vector3(midpoint.x, midpoint.y, fruitsZ), Quaternion.identity);
             mergedFruit.transform.SetParent(fruitsContainer.transform);
-            
+
             // Apply the average velocity and angular velocity
-            if (murgedFruitKeepMovement) {
+            if (murgedFruitKeepMovement)
+            {
                 Rigidbody2D mergedRb = mergedFruit.GetComponent<Rigidbody2D>();
-                if (mergedRb != null) {
+                if (mergedRb != null)
+                {
                     mergedRb.linearVelocity = averageVelocity;
                     mergedRb.angularVelocity = averageAngularVelocity;
                 }
             }
         }
-        // Clear board if fruitID = 10 (water melon)
-        else if (fruitID == 10) {
-            // Play fruit10 merge sound
-            PlaySFX(SFX_fruit10Murge);
-            
+        // Clear board if fruitID = 11 (new max level fruit)
+        else if (fruitID == 11)
+        {
+            // Play fruit11 merge sound
+            PlaySFX(SFX_fruit11Murge);
+
             // Clear board
             StartCoroutine(ClearBoard());
         }
     }
 
     // Function that adds a random fruit to the queue with weighted probabilities
-    public void AddRandomFruitToQueue() {
+    public void AddRandomFruitToQueue()
+    {
         // Calculate totalWeight
         float totalWeight = 0f;
         foreach (var fruit in fruitsDroppable) totalWeight += fruit.weight;
@@ -178,9 +192,11 @@ public class GameManager : MonoBehaviour {
 
         // Determine which fruit to select based on the random value
         float cumulativeWeight = 0f;
-        for (int i = 0; i < fruitsDroppable.Count; i++) {
+        for (int i = 0; i < fruitsDroppable.Count; i++)
+        {
             cumulativeWeight += fruitsDroppable[i].weight;
-            if (randomValue <= cumulativeWeight) {
+            if (randomValue <= cumulativeWeight)
+            {
                 fruitsQueue.Add(fruitsDroppable[i].fruit);
                 break;
             }
@@ -188,45 +204,52 @@ public class GameManager : MonoBehaviour {
     }
 
     // Function that displays next fruit
-    public void UpdateNextFruitDisplay() {
+    public void UpdateNextFruitDisplay()
+    {
         // Save 2nd fruit in queue in nextFruit var
         nextFruit = fruitsQueue[1];
 
         // Remove any child of nextFruitDisplay
-        for (int i = nextFruitDisplay.transform.childCount - 1; i >= 0; i--) {
+        for (int i = nextFruitDisplay.transform.childCount - 1; i >= 0; i--)
+        {
             GameObject.Destroy(nextFruitDisplay.transform.GetChild(i).gameObject);
         }
 
         // Instantiate next fruit as a child of nextFruitDisplay
-        GameObject nextFruitObject = Instantiate(nextFruit, nextFruitDisplay.transform.position, Quaternion.identity);
+        GameObject nextFruitObject = Instantiate(nextFruitArray[nextFruit.GetComponent<Fruit>().fruitID], nextFruitDisplay.transform.position, Quaternion.identity);
         nextFruitObject.transform.SetParent(nextFruitDisplay.transform);
-        nextFruitObject.GetComponent<Rigidbody2D>().simulated = false; // Turn off simulation on rb2d
+        nextFruitObject.transform.localScale = new Vector3(3, 3, 3);
     }
 
     // Function that calculates the points gained from fruits
-    void CalculatePoint(int fruitID, bool merge = false) {
+    void CalculatePoint(int fruitID, bool merge = false)
+    {
         // Validate fruitID
-        if (fruitID < 0 || fruitID >= fruitsPoints.Length) {
+        if (fruitID < 0 || fruitID >= fruitsPoints.Length)
+        {
             Debug.LogError($"Invalid fruitID: {fruitID}. It should be within the range 0 to {fruitsPoints.Length - 1}.");
             return;
         }
-        
+
         // Add points
-        if (merge && fruitID < fruitsMergeBonusPoints.Length) {
+        if (merge && fruitID < fruitsMergeBonusPoints.Length)
+        {
             score += fruitsMergeBonusPoints[fruitID];
         }
         score += fruitsPoints[fruitID];
     }
 
     // Coroutine to destroy all fruits
-    IEnumerator ClearBoard(float destroyDelay = 0.05f) {
+    IEnumerator ClearBoard(float destroyDelay = 0.05f)
+    {
         Transform containerTransform = fruitsContainer.transform;
 
         // Iterate through each child object backwards
-        while (containerTransform.childCount > 0) {
+        while (containerTransform.childCount > 0)
+        {
             // Get the child object at the last index
             GameObject fruitObject = containerTransform.GetChild(containerTransform.childCount - 1).gameObject;
-            
+
             // Get the fruit ID from the FruitScript attached to the fruitObject
             Fruit fruitScript = fruitObject.GetComponent<Fruit>();
             int fruitID = fruitScript.fruitID;
@@ -248,7 +271,8 @@ public class GameManager : MonoBehaviour {
     }
 
     // Function that plays the SFX
-    void PlaySFX(AudioClip audioClip, bool pitchRange=false, float pitch1=0f, float pitch2=0f ) {
+    void PlaySFX(AudioClip audioClip, bool pitchRange = false, float pitch1 = 0f, float pitch2 = 0f)
+    {
         // Create audio source object as child of audioContainer
         GameObject localAudioSource = Instantiate(audioSource);
         localAudioSource.transform.SetParent(audioContainer.transform); // Set audioContainer as parent
@@ -267,14 +291,16 @@ public class GameManager : MonoBehaviour {
     }
 
     // Function that ends the game when its lost
-    void GameLost() {
+    void GameLost()
+    {
         hasGameLostBeenCalled = true;
         readyToDrop = false;
         StartCoroutine(ClearBoard()); // Clear the board
     }
 
     // Function to restrat the game
-    public void Restart() {
+    public void Restart()
+    {
         Debug.Log("RESTART GAME");
 
         // Reload scene
